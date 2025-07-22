@@ -23,15 +23,13 @@ public class PrincipalWindow extends JFrame {
     private JLabel jLabel1;
     private PanelRedondeado panelRedondeado1;
     private PanelRedondeado panelRedondeado2;
-    private PanelRedondeado buscarBtn;
-    private JTextField buscarTareaField;
     private JPanel Draggle;
     private JPanel ExitBtn;
     private JLabel ExitBtnt;
     private JLabel CrearTareaBtnt;
     private JLabel DeshacerBtnt;
-    private JLabel BuscarLabel;
     private ListaTareas listaTareas;
+    private int xMouse, yMouse;
 
     public PrincipalWindow(int idUsuario, GestorRegistro gestorRegistro) {
         this.idUsuario = idUsuario;
@@ -51,6 +49,62 @@ public class PrincipalWindow extends JFrame {
         jPanel1.setBackground(new Color(255, 255, 255));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        // Panel superior verde oscuro
+        // Panel superior verde con botón de salir
+        Draggle = new JPanel();
+        Draggle.setBackground(new Color(0, 102, 102));
+        Draggle.setLayout(new BorderLayout());
+        
+        // Botón de salir
+        ExitBtn = new JPanel();
+        ExitBtn.setBackground(new Color(0, 102, 102));
+        ExitBtnt = new JLabel("X");
+        ExitBtnt.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        ExitBtnt.setForeground(Color.WHITE);
+        ExitBtnt.setHorizontalAlignment(SwingConstants.CENTER);
+        ExitBtnt.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ExitBtnt.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        ExitBtnt.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                System.exit(0);
+            }
+            @Override
+            public void mouseEntered(MouseEvent evt) {
+                ExitBtn.setBackground(new Color(0, 85, 85)); // Verde más oscuro
+            }
+            @Override
+            public void mouseExited(MouseEvent evt) {
+                ExitBtn.setBackground(new Color(0, 102, 102)); // Verde normal
+            }
+        });
+        ExitBtn.add(ExitBtnt);
+        
+        // Panel para el botón de salir (alineado a la derecha)
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setBackground(new Color(0, 102, 102));
+        rightPanel.add(ExitBtn);
+        Draggle.add(rightPanel, BorderLayout.EAST);
+        
+        // Configurar el arrastre de la ventana
+        Draggle.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent evt) {
+                int x = evt.getXOnScreen();
+                int y = evt.getYOnScreen();
+                setLocation(x - xMouse, y - yMouse);
+            }
+        });
+        Draggle.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent evt) {
+                xMouse = evt.getX();
+                yMouse = evt.getY();
+            }
+        });
+        
+        jPanel1.add(Draggle, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 800, 80));
+
         ParentPanel = new JPanel();
         ParentPanel.setBackground(new Color(255, 255, 255));
         //ParentPanel.setLayout(new BoxLayout(ParentPanel, BoxLayout.Y_AXIS));
@@ -62,12 +116,13 @@ public class PrincipalWindow extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         jPanel1.add(scrollPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 100, 720, 360));
 
+        // Mensaje de bienvenida
         jLabel1 = new JLabel();
         jLabel1.setFont(new Font("Roboto SemiBold", Font.BOLD, 24));
-        jLabel1.setForeground(new Color(0, 102, 102));
+        jLabel1.setForeground(Color.WHITE);
         jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel1.setText("Bienvenido, " + gestorRegistro.obtenerNombreUsuario(idUsuario));
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 20, 800, 40));
+        Draggle.add(jLabel1, BorderLayout.CENTER);
 
         panelRedondeado1 = new PanelRedondeado();
         panelRedondeado1.setBackground(new Color(0, 153, 153));
@@ -150,53 +205,6 @@ public class PrincipalWindow extends JFrame {
         );
         jPanel1.add(panelRedondeado2, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 470, 160, 34));
 
-        buscarTareaField = new JTextField("Nombre de la tarea");
-        buscarTareaField.setFont(new Font("Roboto Medium", Font.PLAIN, 14));
-        buscarTareaField.setForeground(new Color(153, 153, 153));
-        buscarTareaField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                if (buscarTareaField.getText().equals("Nombre de la tarea")) {
-                    buscarTareaField.setText("");
-                    buscarTareaField.setForeground(Color.BLACK);
-                }
-            }
-        });
-        jPanel1.add(buscarTareaField, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 470, 200, 34));
-
-        buscarBtn = new PanelRedondeado();
-        buscarBtn.setBackground(new Color(0, 153, 153));
-        BuscarLabel = new JLabel();
-        BuscarLabel.setFont(new Font("Roboto Medium", Font.BOLD, 18));
-        BuscarLabel.setForeground(Color.WHITE);
-        BuscarLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        BuscarLabel.setText("Buscar");
-        BuscarLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        BuscarLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                buscarBtn.setBackground(new Color(0, 102, 102));
-            }
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                buscarBtn.setBackground(new Color(0, 153, 153));
-            }
-        });
-
-        GroupLayout buscarBtnLayout = new GroupLayout(buscarBtn);
-        buscarBtn.setLayout(buscarBtnLayout);
-        buscarBtnLayout.setHorizontalGroup(
-            buscarBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(BuscarLabel, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-        );
-        buscarBtnLayout.setVerticalGroup(
-            buscarBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(GroupLayout.Alignment.TRAILING, buscarBtnLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(BuscarLabel, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel1.add(buscarBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 470, 100, 34));
-
         Draggle = new JPanel();
         Draggle.setBackground(new Color(255, 255, 255));
         Draggle.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -213,7 +221,7 @@ public class PrincipalWindow extends JFrame {
         });
 
         ExitBtn = new JPanel();
-        ExitBtn.setBackground(new Color(255, 255, 255));
+        ExitBtn.setBackground(new Color(0, 102, 102));
         ExitBtnt = new JLabel();
         ExitBtnt.setFont(new Font("Segoe UI", Font.PLAIN, 36));
         ExitBtnt.setForeground(new Color(204, 204, 204));
