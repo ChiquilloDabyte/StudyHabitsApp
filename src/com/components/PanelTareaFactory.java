@@ -67,7 +67,8 @@ public class PanelTareaFactory {
             Object[] message = {
                 "Título de la tarea:", tituloField,
                 "Descripción:", new JScrollPane(descripcionArea),
-                "Fecha de entrega:", fechaPanel
+               //------------------------- No pedir una fecha
+                //"Fecha de entrega:", fechaPanel
             };
             int option = JOptionPane.showConfirmDialog(parent, message, "Nueva Tarea", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (option != JOptionPane.OK_OPTION || tituloField.getText().trim().isEmpty()) {
