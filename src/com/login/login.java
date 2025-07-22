@@ -344,7 +344,14 @@ public class login extends JFrame {
                     return;
                 }
 
-                boolean enviado = gestorRegistro.enviarCodigoConfirmacion(correo);
+                // Verificar si el correo ya está registrado
+                if (gestorRegistro.existeCorreo(correo)) {
+                    JOptionPane.showMessageDialog(login.this, "Este correo ya está registrado. Por favor, inicia sesión.", "Usuario Existente", JOptionPane.INFORMATION_MESSAGE);
+                    SimpleSlideAnimation.slide(FlipFrame, layout, "singin", "right");
+                    return;
+                }
+
+                boolean enviado = gestorRegistro.enviarCodigoVerificacion(correo);
                 if (!enviado) {
                     JOptionPane.showMessageDialog(login.this, "Correo inválido o error al enviar.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -373,11 +380,11 @@ public class login extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         String codigoIngresado = campoCodigo.getText().trim();
-                        if (gestorRegistro.validarCodigo(codigoIngresado)) {
-                            int idUsuario = gestorRegistro.registrarUsuario(nombre, correo, contrasena);
-                            if (idUsuario != -1) {
+                        if (gestorRegistro.verificarCodigo(correo, codigoIngresado)) {
+                            if (gestorRegistro.registrarUsuario(nombre, "", correo, contrasena)) {
                                 JOptionPane.showMessageDialog(dialogo, "Registro exitoso.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                                 dialogo.dispose();
+                                int idUsuario = gestorRegistro.validarCredenciales(correo, contrasena);
                                 PrincipalWindow principal = new PrincipalWindow(idUsuario, gestorRegistro);
                                 principal.setVisible(true);
                                 login.this.dispose();
