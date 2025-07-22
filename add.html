@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHabitsApp - Desarrollo Ágil con Scrum: Estructuras de Datos</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #e74c3c;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #f1f2f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .command-block {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            border-left: 4px solid #e74c3c;
+        }
+        .java-block {
+            background-color: #2d4a22;
+            color: #d4ffd4;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            border-left: 4px solid #4a9f4a;
+        }
+        .sql-block {
+            background-color: #2a4365;
+            color: #bee3f8;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            border-left: 4px solid #3182ce;
+        }
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .nav-menu {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .nav-menu a {
+            color: #e74c3c;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav-menu a:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+        .data-structure-box {
+            background: #f8f9fa;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        .complexity-table th, .complexity-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .complexity-table th {
+            background-color: #e74c3c;
+            color: white;
+            font-weight: 600;
+        }
+        .complexity-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .flow-diagram {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: rgb(99, 30, 30);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .architecture-box {
+            background: #b2d7b2;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-menu">
+            <strong>Navegación Rápida:</strong>
+            <a href="#introduccion">Visión del Producto</a>
+            <a href="#user-stories">Historias de Usuario</a>
+            <a href="#sprint-planning">Planificación de Sprints</a>
+            <a href="#estructuras-datos">Implementación de Estructuras</a>
+            <a href="#scrum-events">Eventos Scrum</a>
+            <a href="#retrospectiva">Retrospectiva</a>
+            <a href="#conclusion">Conclusiones</a>
+        </div>
+
+        <h1><span class="emoji">�</span>StudyHabitsApp - Desarrollo Ágil con Scrum: Implementación de Estructuras de Datos</h1>
+
+        <h2 id="introduccion"><span class="emoji">🎯</span>Visión del Producto y Metodología</h2>
+
+        <p>Este documento presenta la metodología de desarrollo ágil utilizada para crear <strong>StudyHabitsApp</strong>, una aplicación de gestión de tareas educativas desarrollada siguiendo el framework Scrum. El proyecto tiene como objetivo principal demostrar la implementación práctica de estructuras de datos fundamentales en un entorno de desarrollo real, aplicando principios de ingeniería de software y metodologías ágiles.</p>
+
+        <div class="info">
+            <h3>Visión del Producto:</h3>
+            <p><strong>"Crear una aplicación educativa que permita a estudiantes gestionar sus tareas académicas de manera eficiente, mientras sirve como plataforma práctica para el aprendizaje y aplicación de estructuras de datos fundamentales como listas enlazadas y pilas."</strong></p>
+            
+            <h3>Objetivos del Proyecto:</h3>
+            <ol>
+                <li><strong>Educativo:</strong> Implementar estructuras de datos desde cero para reforzar conceptos teóricos</li>
+                <li><strong>Práctico:</strong> Desarrollar una aplicación funcional que resuelva un problema real de gestión de tareas</li>
+                <li><strong>Metodológico:</strong> Aplicar Scrum como framework de desarrollo ágil</li>
+                <li><strong>Técnico:</strong> Integrar persistencia de datos con estructuras en memoria</li>
+                <li><strong>Usuario:</strong> Proporcionar una interfaz intuitiva para la gestión de recordatorios académicos</li>
+            </ol>
+        </div>
+
+        <h2 id="user-stories"><span class="emoji">📖</span>Historias de Usuario e Implementación INVEST/SMART</h2>
+
+        <h3>Metodología Scrum Aplicada</h3>
+
+        <p>El desarrollo de StudyHabitsApp siguió un enfoque Scrum estructurado en 3 sprints de 2 semanas cada uno. Cada historia de usuario fue diseñada aplicando los criterios <strong>INVEST</strong> (Independent, Negotiable, Valuable, Estimable, Small, Testable) y <strong>SMART</strong> (Specific, Measurable, Achievable, Relevant, Time-bound).</p>
+
+        <div class="architecture-box">
+            <h3>Equipo Scrum y Roles:</h3>
+            <ul>
+                <li><strong>Product Owner:</strong> Responsable de definir requisitos y priorizar el backlog</li>
+                <li><strong>Scrum Master:</strong> Facilitador del proceso y eliminador de impedimentos</li>
+                <li><strong>Development Team:</strong> Desarrolladores enfocados en implementación de estructuras de datos</li>
+            </ul>
+        </div>
+
+        <h3>Product Backlog - Historias de Usuario Principales</h3>
+
+        <div class="data-structure-box">
+            <h4><span class="emoji">👤</span>Historia de Usuario #1: Sistema de Autenticación</h4>
+            <p><strong>Como</strong> estudiante universitario <strong>quiero</strong> poder registrarme e iniciar sesión en la aplicación <strong>para</strong> acceder de forma segura a mis tareas personalizadas.</p>
+            
+            <div class="success">
+                <h5>Criterios INVEST:</h5>
+                <ul>
+                    <li><strong>Independent:</strong> No depende de otras funcionalidades para ser implementada</li>
+                    <li><strong>Negotiable:</strong> El método de autenticación puede variar (email vs usuario)</li>
+                    <li><strong>Valuable:</strong> Proporciona seguridad y personalización al usuario</li>
+                    <li><strong>Estimable:</strong> 5 story points (1 sprint)</li>
+                    <li><strong>Small:</strong> Completable en una iteración</li>
+                    <li><strong>Testable:</strong> Login exitoso/fallido, registro de nuevos usuarios</li>
+                </ul>
+                
+                <h5>Criterios SMART:</h5>
+                <ul>
+                    <li><strong>Specific:</strong> Sistema de login con base de datos SQLite</li>
+                    <li><strong>Measurable:</strong> 100% de logins válidos autenticados correctamente</li>
+                    <li><strong>Achievable:</strong> Utilizando JDBC y encriptación básica</li>
+                    <li><strong>Relevant:</strong> Fundamental para la seguridad del sistema</li>
+                    <li><strong>Time-bound:</strong> Completado en Sprint 1 (2 semanas)</li>
+                </ul>
+            </div>
+            
+            <p><strong>Implementación de Estructuras de Datos:</strong> El sistema utiliza un modelo de datos simple almacenado en SQLite, con validación en memoria usando estructuras básicas de Java para la gestión de sesiones.</p>
+        </div>
+
+        <div class="data-structure-box">
+            <h4><span class="emoji">📝</span>Historia de Usuario #2: Gestión de Tareas con Lista Enlazada</h4>
+            <p><strong>Como</strong> estudiante <strong>quiero</strong> crear, editar y eliminar tareas académicas <strong>para</strong> organizar mi carga de trabajo de manera eficiente.</p>
+            
+            <div class="success">
+                <h5>Criterios INVEST:</h5>
+                <ul>
+                    <li><strong>Independent:</strong> Funciona independientemente del sistema de recordatorios</li>
+                    <li><strong>Negotiable:</strong> Los campos de la tarea pueden ajustarse según necesidades</li>
+                    <li><strong>Valuable:</strong> Funcionalidad core de la aplicación</li>
+                    <li><strong>Estimable:</strong> 8 story points (1.5 sprints)</li>
+                    <li><strong>Small:</strong> Dividida en sub-tareas para CRUD completo</li>
+                    <li><strong>Testable:</strong> Verificación de operaciones CRUD en la lista</li>
+                </ul>
+                
+                <h5>Criterios SMART:</h5>
+                <ul>
+                    <li><strong>Specific:</strong> Implementar ListaEnlazada personalizada para gestión de tareas</li>
+                    <li><strong>Measurable:</strong> Soporte para mínimo 100 tareas simultáneas</li>
+                    <li><strong>Achievable:</strong> Lista enlazada simple con nodos personalizados</li>
+                    <li><strong>Relevant:</strong> Demuestra comprensión práctica de estructuras de datos lineales</li>
+                    <li><strong>Time-bound:</strong> Completado en Sprint 2 (semanas 3-4)</li>
+                </ul>
+            </div>
+            
+            <p><strong>Decisión de Diseño de Estructuras:</strong> Se implementó una ListaEnlazada genérica extendida por ListaTareas especializada. Esta decisión permite flexibilidad en el manejo de diferentes tipos de datos mientras mantiene la eficiencia en operaciones frecuentes como inserción y recorrido secuencial.</p>
+        </div>
+
+        <div class="data-structure-box">
+            <h4><span class="emoji">⏰</span>Historia de Usuario #3: Sistema de Fechas y Recordatorios</h4>
+            <p><strong>Como</strong> estudiante <strong>quiero</strong> asignar fechas de entrega a mis tareas y visualizarlas organizadas cronológicamente <strong>para</strong> priorizar mi tiempo de estudio efectivamente.</p>
+            
+            <div class="success">
+                <h5>Criterios INVEST:</h5>
+                <ul>
+                    <li><strong>Independent:</strong> Construye sobre la gestión básica de tareas</li>
+                    <li><strong>Negotiable:</strong> Formato de fecha y recordatorios configurables</li>
+                    <li><strong>Valuable:</strong> Aumenta significativamente la utilidad de la aplicación</li>
+                    <li><strong>Estimable:</strong> 6 story points (1 sprint)</li>
+                    <li><strong>Small:</strong> Enfocada específicamente en gestión temporal</li>
+                    <li><strong>Testable:</strong> Ordenamiento correcto por fechas, visualización apropiada</li>
+                </ul>
+                
+                <h5>Criterios SMART:</h5>
+                <ul>
+                    <li><strong>Specific:</strong> Integración de JCalendar para selección de fechas</li>
+                    <li><strong>Measurable:</strong> Ordenamiento automático de tareas por fecha de entrega</li>
+                    <li><strong>Achievable:</strong> Utilizando componentes existentes de Java Swing</li>
+                    <li><strong>Relevant:</strong> Funcionalidad crítica para gestión académica</li>
+                    <li><strong>Time-bound:</strong> Integrado en Sprint 2 (semanas 3-4)</li>
+                </ul>
+            </div>
+            
+            <p><strong>Optimización de Estructuras:</strong> La implementación aprovecha el ordenamiento natural de la ListaEnlazada y la consulta SQL con ORDER BY para mantener las tareas organizadas cronológicamente sin necesidad de reestructurar constantemente los datos en memoria.</p>
+        </div>
+
+        <div class="data-structure-box">
+            <h4><span class="emoji">↩️</span>Historia de Usuario #4: Funcionalidad Deshacer/Rehacer con Pila</h4>
+            <p><strong>Como</strong> usuario <strong>quiero</strong> poder deshacer acciones realizadas por error <strong>para</strong> recuperar datos eliminados accidentalmente y mejorar mi experiencia de uso.</p>
+            
+            <div class="success">
+                <h5>Criterios INVEST:</h5>
+                <ul>
+                    <li><strong>Independent:</strong> Funcionalidad adicional que no afecta operaciones básicas</li>
+                    <li><strong>Negotiable:</strong> Número de acciones recordadas puede ajustarse</li>
+                    <li><strong>Valuable:</strong> Mejora significativamente la usabilidad</li>
+                    <li><strong>Estimable:</strong> 5 story points (1 sprint)</li>
+                    <li><strong>Small:</strong> Implementación específica de estructura Pila</li>
+                    <li><strong>Testable:</strong> Verificación de reversión correcta de operaciones</li>
+                </ul>
+                
+                <h5>Criterios SMART:</h5>
+                <ul>
+                    <li><strong>Specific:</strong> Implementar Pila personalizada para acciones reversibles</li>
+                    <li><strong>Measurable:</strong> Capacidad de deshacer las últimas 10 acciones</li>
+                    <li><strong>Achievable:</strong> Patrón Command implementado con lambdas</li>
+                    <li><strong>Relevant:</strong> Demuestra aplicación práctica de estructura LIFO</li>
+                    <li><strong>Time-bound:</strong> Completado en Sprint 3 (semanas 5-6)</li>
+                </ul>
+            </div>
+            
+            <p><strong>Aplicación del Patrón Command:</strong> La Pila almacena objetos Runnable que encapsulan las operaciones inversas. Esta implementación demuestra cómo las estructuras de datos LIFO son ideales para sistemas de deshacer, donde la última acción realizada debe ser la primera en revertirse.</p>
+        </div>
+
+        <div class="data-structure-box">
+            <h4><span class="emoji">🎨</span>Historia de Usuario #5: Interfaz de Usuario Intuitiva</h4>
+            <p><strong>Como</strong> estudiante <strong>quiero</strong> una interfaz visual atractiva y fácil de usar <strong>para</strong> interactuar naturalmente con la aplicación sin curva de aprendizaje compleja.</p>
+            
+            <div class="success">
+                <h5>Criterios INVEST:</h5>
+                <ul>
+                    <li><strong>Independent:</strong> Separada de la lógica de negocio mediante patrón MVC</li>
+                    <li><strong>Negotiable:</strong> Estilo visual y componentes pueden personalizarse</li>
+                    <li><strong>Valuable:</strong> Determina la adopción y usabilidad de la aplicación</li>
+                    <li><strong>Estimable:</strong> 7 story points (1 sprint)</li>
+                    <li><strong>Small:</strong> Enfocada en componentes UI específicos</li>
+                    <li><strong>Testable:</strong> Validación de usabilidad y responsive design</li>
+                </ul>
+                
+                <h5>Criterios SMART:</h5>
+                <ul>
+                    <li><strong>Specific:</strong> Componentes personalizados con Java Swing</li>
+                    <li><strong>Measurable:</strong> Tiempo de respuesta UI menor a 200ms para operaciones básicas</li>
+                    <li><strong>Achievable:</strong> Utilizando técnicas avanzadas de Java Swing</li>
+                    <li><strong>Relevant:</strong> Esencial para la experiencia del usuario final</li>
+                    <li><strong>Time-bound:</strong> Refinado a lo largo de todos los sprints</li>
+                </ul>
+            </div>
+            
+            <p><strong>Integración UI-Datos:</strong> Los componentes personalizados como PanelTarea mantienen referencias directas a los nodos de la ListaEnlazada, permitiendo actualizaciones eficientes de la interfaz cuando cambian los datos subyacentes. Esta decisión, aunque genera acoplamiento, optimiza la sincronización entre vista y modelo en el contexto educativo.</p>
+        </div>
+
+        <h2 id="estructuras-datos"><span class="emoji">🔢</span>Análisis Detallado de Estructuras de Datos</h2>
+
+        <h3>1. Lista Enlazada - Implementación Base</h3>
+
+        <div class="data-structure-box">
+            <h4>Ubicación: [`estructuras/ListaEnlazada.java`](src/com/estructuras/ListaEnlazada.java)</h4>
+            
+            <p><strong>Propósito Identificado:</strong> Estructura fundamental para almacenamiento dinámico de elementos genéricos.</p>
+
+            <div class="java-block">
+public class ListaEnlazada&lt;T&gt; {
+    protected Nodo&lt;T&gt; cabeza;
+    protected int tamaño;
+    
+    public void agregar(T dato) {
+        Nodo&lt;T&gt; nuevoNodo = new Nodo&lt;&gt;(dato);
+        if (cabeza == null) {
+            cabeza = nuevoNodo;
+        } else {
+            // Inserción al final
+            Nodo&lt;T&gt; actual = cabeza;
+            while (actual.getSiguiente() != null) {
+                actual = actual.getSiguiente();
+            }
+            actual.setSiguiente(nuevoNodo);
+        }
+        tamaño++;
+    }
+}
+            </div>
+
+            <h4>Análisis de Complejidad:</h4>
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Operación</th>
+                        <th>Complejidad Temporal</th>
+                        <th>Complejidad Espacial</th>
+                        <th>Justificación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Inserción al final</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                        <td>Debe recorrer hasta el último nodo</td>
+                    </tr>
+                    <tr>
+                        <td>Búsqueda</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                        <td>Búsqueda secuencial</td>
+                    </tr>
+                    <tr>
+                        <td>Eliminación</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                        <td>Puede requerir búsqueda del nodo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>2. Lista de Tareas - Especialización de Lista Enlazada</h3>
+
+        <div class="data-structure-box">
+            <h4>Ubicación: [`implementation/ListaTareas.java`](src/com/implementation/ListaTareas.java)</h4>
+            
+            <p><strong>Propósito Identificado:</strong> Especialización de [`ListaEnlazada`](src/com/estructuras/ListaEnlazada.java) para manejar objetos [`Tarea`](src/com/implementation/Tarea.java) específicamente.</p>
+
+            <div class="java-block">
+public class ListaTareas extends ListaEnlazada&lt;Tarea&gt; {
+    
+    public NodoTareas agregarTarea(int idTarea, int idUsuario, String titulo, String descripcion) {
+        Tarea tarea = new Tarea(idTarea, idUsuario, titulo, descripcion);
+        NodoTareas nodo = new NodoTareas(tarea);
+        super.agregar(tarea);
+        return nodo;
+    }
+
+    public NodoTareas buscarPorIdTarea(int idTarea) {
+        Nodo&lt;Tarea&gt; actual = getCabeza();
+        while (actual != null) {
+            NodoTareas nodo = (NodoTareas) actual;
+            if (nodo.getDato().getIdTarea() == idTarea) {
+                return nodo;
+            }
+            actual = actual.getSiguiente();
+        }
+        return null;
+    }
+}
+            </div>
+
+            <div class="info">
+                <p><strong>Decisión de Diseño Identificada:</strong> La herencia de [`ListaEnlazada`](src/com/estructuras/ListaEnlazada.java) permite reutilizar la funcionalidad base mientras se añaden métodos específicos para el dominio de tareas.</p>
+            </div>
+        </div>
+
+        <h3>3. Pila - Implementación para Deshacer/Rehacer</h3>
+
+        <div class="data-structure-box">
+            <h4>Ubicación: [`estructuras/Pila.java`](src/com/estructuras/Pila.java) y [`implementation/PilaAcciones.java`](src/com/implementation/PilaAcciones.java)</h4>
+            
+            <p><strong>Propósito Identificado:</strong> Implementar funcionalidad de deshacer/rehacer operaciones en el sistema.</p>
+
+            <div class="java-block">
+public class Pila&lt;T&gt; {
+    private Nodo&lt;T&gt; tope;
+    private int tamaño;
+    
+    public void apilar(T elemento) {
+        Nodo&lt;T&gt; nuevoNodo = new Nodo&lt;&gt;(elemento);
+        nuevoNodo.setSiguiente(tope);
+        tope = nuevoNodo;
+        tamaño++;
+    }
+    
+    public T desapilar() {
+        if (estaVacia()) {
+            throw new RuntimeException("La pila está vacía");
+        }
+        T elemento = tope.getDato();
+        tope = tope.getSiguiente();
+        tamaño--;
+        return elemento;
+    }
+}
+            </div>
+
+            <h4>Uso Específico en la Aplicación:</h4>
+            <div class="java-block">
+// En PilaAcciones.java - Implementación del patrón Command
+public class PilaAcciones {
+    private Pila&lt;Runnable&gt; acciones;
+    
+    public void agregarAccion(Runnable accion) {
+        acciones.apilar(accion);
+    }
+    
+    public boolean deshacer(JFrame parent) {
+        if (!acciones.estaVacia()) {
+            Runnable accion = acciones.desapilar();
+            accion.run();
+            return true;
+        }
+        return false;
+    }
+}
+            </div>
+
+            <div class="success">
+                <p><strong>Patrón Identificado:</strong> Implementación del patrón <em>Command</em> utilizando una pila para gestionar acciones reversibles. Se observa en [`GestorRegistro.java`](src/com/database/GestorRegistro.java) líneas 110-125.</p>
+            </div>
+        </div>
+
+        <h3>4. Nodo Especializado para Tareas</h3>
+
+        <div class="data-structure-box">
+            <h4>Ubicación: [`implementation/NodoTareas.java`](src/com/implementation/NodoTareas.java)</h4>
+            
+            <p><strong>Propósito Identificado:</strong> Extender el [`Nodo`](src/com/estructuras/Nodo.java) base para incluir referencias a componentes UI.</p>
+
+            <div class="java-block">
+public class NodoTareas extends Nodo&lt;Tarea&gt; {
+    private PanelTarea panelAsociado;
+
+    public NodoTareas(Tarea tarea) {
+        super(tarea);
+    }
+
+    public void setPanelAsociado(PanelTarea panel) {
+        this.panelAsociado = panel;
+    }
+
+    public PanelTarea getPanelAsociado() {
+        return panelAsociado;
+    }
+}
+            </div>
+
+            <div class="warning">
+                <p><strong>Observación Crítica:</strong> Esta implementación vincula directamente la estructura de datos con la capa de presentación, lo que puede considerarse una violación del principio de separación de responsabilidades. Sin embargo, en el contexto educativo, permite una gestión más directa de la sincronización UI-datos.</p>
+            </div>
+        </div>
+
+        <h2 id="base-datos"><span class="emoji">🗄️</span>Análisis de la Estructura de Base de Datos</h2>
+
+        <h3>Esquema de Base de Datos Identificado</h3>
+
+        <p>El archivo [`database/schema.sql`](src/com/database/schema.sql) define la estructura persistente:</p>
+
+        <div class="sql-block">
+-- Tabla de usuarios
+CREATE TABLE Usuarios (
+    idUsuario INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    correo TEXT UNIQUE NOT NULL,
+    contrasena TEXT NOT NULL
+);
+
+-- Tabla de tareas
+CREATE TABLE Tareas (
+    idTarea INTEGER PRIMARY KEY AUTOINCREMENT,
+    idUsuario INTEGER,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    completada BOOLEAN DEFAULT 0,
+    fechaEntrega TEXT,
+    FOREIGN KEY (idUsuario) REFERENCES Usuarios (idUsuario)
+);
+        </div>
+
+        <h3>Patrón DAO (Data Access Object) Implementado</h3>
+
+        <p>La clase [`GestorRegistro`](src/com/database/GestorRegistro.java) implementa el patrón DAO:</p>
+
+        <div class="java-block">
+public class GestorRegistro {
+    private PilaAcciones pilaAcciones;
+    private static final String DB_URL = "jdbc:sqlite:taskgestor.db";
+    
+    // CRUD Operations
+    public int agregarTarea(int idUsuario, String titulo, String descripcion, String fechaEntrega) {
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            String query = "INSERT INTO Tareas (idUsuario, nombre, descripcion, completada, fechaEntrega) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            // ... implementación
+        }
+    }
+    
+    public List&lt;Tarea&gt; buscarTareasPorUsuario(int idUsuario) {
+        // Implementación de búsqueda con ORDER BY fechaEntrega
+    }
+}
+        </div>
+
+        <h3>Integración de Estructuras de Datos con Persistencia</h3>
+
+        <div class="flow-diagram">
+            <h4>Flujo de Datos Identificado:</h4>
+            <p><code>UI Event</code> → <code>ListaTareas (memoria)</code> → <code>GestorRegistro (DAO)</code> → <code>SQLite (persistencia)</code> → <code>PilaAcciones (para deshacer)</code></p>
+        </div>
+
+        <h2 id="patron-diseno"><span class="emoji">🎨</span>Patrones de Diseño Identificados</h2>
+
+        <h3>1. Factory Pattern en Creación de Componentes</h3>
+
+        <div class="architecture-box">
+            <h4>Ubicación: [`components/PanelTareaFactory.java`](src/com/components/PanelTareaFactory.java)</h4>
+            
+            <div class="java-block">
+public class PanelTareaFactory {
+    public static PanelTarea agregarTarea(JPanel parent, ListaTareas lista, 
+                                        NodoTareas nodo, GestorRegistro gestorRegistro) {
+        // Lógica compleja de creación encapsulada
+        // Integración con estructuras de datos
+        // Manejo de eventos UI
+        // Validación de entrada
+        return panelTarea;
+    }
+}
+            </div>
+            
+            <p><strong>Beneficio Identificado:</strong> Centraliza la lógica compleja de creación de tareas y su integración con las estructuras de datos.</p>
+        </div>
+
+        <h3>2. Command Pattern para Acciones Reversibles</h3>
+
+        <div class="architecture-box">
+            <h4>Implementación en [`database/GestorRegistro.java`](src/com/database/GestorRegistro.java)</h4>
+            
+            <div class="java-block">
+// Líneas 110-125: Registro de acciones para deshacer
+if (registrarAccion) {
+    pilaAcciones.agregarAccion(() -> eliminarTarea(idTarea, false));
+}
+
+// Líneas 179-200: Implementación de eliminación con comando reverso
+if (registrarAccion) {
+    pilaAcciones.agregarAccion(() -> {
+        agregarTarea(idUsuario, nombre, descripcion, fechaEntrega, false);
+    });
+}
+            </div>
+            
+            <p><strong>Observación:</strong> Uso inteligente de lambdas para encapsular acciones reversibles.</p>
+        </div>
+
+        <h3>3. Observer Pattern Implícito en UI</h3>
+
+        <div class="architecture-box">
+            <p><strong>Ubicación:</strong> [`windowP/PrincipalWindow.java`](src/com/windowP/PrincipalWindow.java) y [`components/PanelTarea.java`](src/com/components/PanelTarea.java)</p>
+            
+            <div class="java-block">
+// En PrincipalWindow.java - Actualización reactiva
+public void actualizarTareas() {
+    cargarTareas(); // Recarga desde la base de datos
+    ParentPanel.revalidate();
+    ParentPanel.repaint();
+}
+
+// En PanelTarea.java - Notificación de cambios
+private void eliminarTarea() {
+    gestorRegistro.eliminarTarea(tarea.getIdTarea());
+    parent.actualizarTareas(); // Notifica al contenedor padre
+}
+            </div>
+        </div>
+
+        <h2 id="flujo-datos"><span class="emoji">🔄</span>Análisis del Flujo de Datos</h2>
+
+        <h3>1. Flujo de Creación de Tareas</h3>
+
+        <div class="flow-diagram">
+            <ol>
+                <li><strong>Usuario hace clic en "Crear Tarea"</strong> → [`PrincipalWindow.java`](src/com/windowP/PrincipalWindow.java):81</li>
+                <li><strong>Se invoca PanelTareaFactory</strong> → [`PanelTareaFactory.java`](src/com/components/PanelTareaFactory.java):15</li>
+                <li><strong>Se muestra diálogo de entrada</strong> → Validación de datos</li>
+                <li><strong>Se crea objeto Tarea</strong> → [`Tarea.java`](src/com/implementation/Tarea.java)</li>
+                <li><strong>Se persiste en base de datos</strong> → [`GestorRegistro.java`](src/com/database/GestorRegistro.java):105</li>
+                <li><strong>Se añade a ListaTareas</strong> → [`ListaTareas.java`](src/com/implementation/ListaTareas.java):7</li>
+                <li><strong>Se registra acción para deshacer</strong> → [`PilaAcciones`](src/com/implementation/PilaAcciones.java)</li>
+                <li><strong>Se actualiza UI</strong> → Revalidación y repintado</li>
+            </ol>
+        </div>
+
+        <h3>2. Flujo de Eliminación de Tareas</h3>
+
+        <div class="flow-diagram">
+            <ol>
+                <li><strong>Usuario hace clic en eliminar</strong> → [`PanelTarea.java`](src/com/components/PanelTarea.java):70</li>
+                <li><strong>Se obtienen datos para restauración</strong> → [`GestorRegistro.java`](src/com/database/GestorRegistro.java):179</li>
+                <li><strong>Se registra comando de restauración</strong> → [`PilaAcciones`](src/com/implementation/PilaAcciones.java)</li>
+                <li><strong>Se elimina de base de datos</strong> → Query SQL DELETE</li>
+                <li><strong>Se actualiza ListaTareas</strong> → Recarga desde BD</li>
+                <li><strong>Se actualiza UI</strong> → Notificación al padre</li>
+            </ol>
+        </div>
+
+        <h3>3. Flujo de Autenticación</h3>
+
+        <div class="flow-diagram">
+            <ol>
+                <li><strong>Entrada de credenciales</strong> → [`login.java`](src/com/login/login.java)</li>
+                <li><strong>Validación en base de datos</strong> → [`GestorRegistro.java`](src/com/database/GestorRegistro.java):50</li>
+                <li><strong>Creación de sesión</strong> → Almacenamiento de idUsuario</li>
+                <li><strong>Transición a ventana principal</strong> → [`PrincipalWindow`](src/com/windowP/PrincipalWindow.java):36</li>
+                <li><strong>Carga de tareas del usuario</strong> → [`GestorRegistro.buscarTareasPorUsuario`](src/com/database/GestorRegistro.java):83</li>
+            </ol>
+        </div>
+
+        <h2><span class="emoji">🎯</span>Análisis de Funcionalidades de Recordatorio</h2>
+
+        <h3>Sistema de Gestión de Fechas Importantes</h3>
+
+        <div class="info">
+            <p><strong>Objetivo Identificado:</strong> El sistema permite a los usuarios establecer fechas de entrega para sus tareas y gestionar recordatorios.</p>
+        </div>
+
+        <h4>Implementación de Fechas:</h4>
+
+        <div class="java-block">
+// En Tarea.java - Modelo de datos
+private String fechaEntrega;
+
+public void setFechaEntrega(String fechaEntrega) {
+    this.fechaEntrega = fechaEntrega;
+}
+
+// En VistaTareaDialog.java - Selector de fecha/hora
+JCalendar calendar = new JCalendar();
+JSpinner timeSpinner = new JSpinner(new SpinnerDateModel());
+
+// Formato de fecha identificado: "yyyy-MM-dd HH:mm"
+String formattedDate = String.format("%tF %tR", cal, cal);
+        </div>
+
+        <h4>Persistencia de Fechas en Base de Datos:</h4>
+
+        <div class="sql-block">
+-- En schema.sql
+fechaEntrega TEXT  -- Almacenamiento como texto formatado
+
+-- En GestorRegistro.java - Query con ordenamiento por fecha
+SELECT idTarea, nombre, descripcion, completada, fechaEntrega 
+FROM Tareas 
+WHERE idUsuario = ? 
+ORDER BY fechaEntrega
+        </div>
+
+        <h3>Componentes UI para Gestión de Fechas:</h3>
+
+        <ol>
+            <li><strong>[`PanelTareaFactory.java`](src/com/components/PanelTareaFactory.java):15-56</strong> - Selector de fecha/hora en creación</li>
+            <li><strong>[`VistaTareaDialog.java`](src/com/components/VistaTareaDialog.java):39-79</strong> - Edición de fechas existentes</li>
+            <li><strong>[`PanelTarea.java`](src/com/components/PanelTarea.java):49-65</strong> - Visualización de fechas en cards</li>
+        </ol>
+
+        <h2><span class="emoji">⚡</span>Análisis de Rendimiento y Optimización</h2>
+
+        <h3>Complejidades Temporales Identificadas:</h3>
+
+        <table class="complexity-table">
+            <thead>
+                <tr>
+                    <th>Operación</th>
+                    <th>Estructura de Datos</th>
+                    <th>Complejidad</th>
+                    <th>Ubicación en Código</th>
+                    <th>Optimización Posible</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Carga de tareas</td>
+                    <td>SQLite + Lista</td>
+                    <td>O(n)</td>
+                    <td>[`GestorRegistro.java`](src/com/database/GestorRegistro.java):83</td>
+                    <td>Paginación, índices en BD</td>
+                </tr>
+                <tr>
+                    <td>Búsqueda por ID</td>
+                    <td>ListaTareas</td>
+                    <td>O(n)</td>
+                    <td>[`ListaTareas.java`](src/com/implementation/ListaTareas.java):17</td>
+                    <td>HashMap para acceso O(1)</td>
+                </tr>
+                <tr>
+                    <td>Inserción de tarea</td>
+                    <td>Lista + BD</td>
+                    <td>O(1) + O(log n)</td>
+                    <td>[`PanelTareaFactory.java`](src/com/components/PanelTareaFactory.java):74</td>
+                    <td>Batch inserts</td>
+                </tr>
+                <tr>
+                    <td>Operación deshacer</td>
+                    <td>Pila</td>
+                    <td>O(1)</td>
+                    <td>[`PilaAcciones`](src/com/implementation/PilaAcciones.java)</td>
+                    <td>Ya optimizado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Patrones de Optimización Observados:</h3>
+
+        <div class="success">
+            <ol>
+                <li><strong>Lazy Loading</strong>: Las tareas se cargan solo cuando se accede a la ventana principal</li>
+                <li><strong>Reutilización de Conexiones</strong>: Uso de try-with-resources para gestión automática</li>
+                <li><strong>Prepared Statements</strong>: Prevención de inyección SQL y mejor rendimiento</li>
+                <li><strong>Event Dispatch Thread</strong>: Operaciones UI en el hilo apropiado</li>
+            </ol>
+        </div>
+
+        <h2><span class="emoji">🔧</span>Análisis de Componentes UI Personalizados</h2>
+
+        <h3>1. PanelRedondeado - Componente Base Reutilizable</h3>
+
+        <div class="java-block">
+// Análisis de components/PanelRedondeado.java
+public class PanelRedondeado extends JPanel {
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                           RenderingHints.VALUE_ANTIALIAS_ON);
+        // Renderizado de esquinas redondeadas
+    }
+}
+        </div>
+
+        <p><strong>Uso Identificado:</strong> Base para botones y paneles en toda la aplicación, proporcionando consistencia visual.</p>
+
+        <h3>2. ScrollStyle - Personalización de Barras de Desplazamiento</h3>
+
+        <div class="java-block">
+// Análisis de components/ScrollStyle.java
+public class ScrollStyle extends BasicScrollBarUI {
+    @Override
+    protected void configureScrollBarColors() {
+        thumbColor = new Color(130, 130, 130, 180);
+        trackColor = new Color(0, 0, 0, 0);
+    }
+}
+        </div>
+
+        <p><strong>Propósito:</strong> Mejorar la estética de las barras de desplazamiento para una experiencia más moderna.</p>
+
+        <h2 id="conclusion"><span class="emoji">🎯</span>Conclusiones del Análisis</h2>
+
+        <h3>Fortalezas Identificadas en el Diseño:</h3>
+
+        <div class="success">
+            <ol>
+                <li><strong>Uso Educativo Efectivo de Estructuras de Datos</strong>:
+                    <ul>
+                        <li>Implementación propia de lista enlazada con especialización para tareas</li>
+                        <li>Uso inteligente de pila para funcionalidad deshacer/rehacer</li>
+                        <li>Separación clara entre estructura de datos y lógica de negocio</li>
+                    </ul>
+                </li>
+                
+                <li><strong>Arquitectura Sólida</strong>:
+                    <ul>
+                        <li>Patrón MVC bien definido</li>
+                        <li>Separación entre persistencia y estructuras en memoria</li>
+                        <li>Uso apropiado de patrones de diseño (Factory, Command, DAO)</li>
+                    </ul>
+                </li>
+                
+                <li><strong>Funcionalidad de Gestión de Fechas Completa</strong>:
+                    <ul>
+                        <li>Selector de fecha/hora integrado con JCalendar</li>
+                        <li>Persistencia de fechas con ordenamiento automático</li>
+                        <li>Interfaz intuitiva para edición de fechas</li>
+                    </ul>
+                </li>
+                
+                <li><strong>Código Mantenible</strong>:
+                    <ul>
+                        <li>Documentación mediante comentarios</li>
+                        <li>Nomenclatura descriptiva</li>
+                        <li>Modularidad en componentes</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <h3>Áreas de Mejora Identificadas:</h3>
+
+        <div class="warning">
+            <ol>
+                <li><strong>Acoplamiento UI-Datos</strong>: [`NodoTareas`](src/com/implementation/NodoTareas.java) vincula directamente estructura de datos con componentes UI</li>
+                <li><strong>Escalabilidad</strong>: Búsqueda lineal O(n) en [`ListaTareas`](src/com/implementation/ListaTareas.java) limitará rendimiento con muchas tareas</li>
+                <li><strong>Gestión de Errores</strong>: Manejo básico de excepciones en operaciones de base de datos</li>
+                <li><strong>Concurrencia</strong>: No hay consideraciones para acceso concurrente a estructuras de datos</li>
+            </ol>
+        </div>
+
+        <h3>Logros del Proyecto en Contexto Educativo:</h3>
+
+        <div class="info">
+            <p><strong>El proyecto demuestra exitosamente:</strong></p>
+            <ol>
+                <li><strong>Comprensión Práctica de Estructuras de Datos</strong>: Implementación de lista enlazada y pila con casos de uso reales</li>
+                <li><strong>Integración de Conceptos</strong>: Combinación de estructuras de datos, persistencia, y UI en una aplicación coherente</li>
+                <li><strong>Aplicación de Patrones</strong>: Uso apropiado de patrones de diseño para resolver problemas específicos</li>
+                <li><strong>Desarrollo Incremental</strong>: Arquitectura que permite extensión y modificación</li>
+                <li><strong>Funcionalidad Completa</strong>: Sistema de recordatorios funcional con gestión de fechas importantes</li>
+            </ol>
+        </div>
+
+        <div class="architecture-box">
+            <h3><span class="emoji">🚀</span>Comandos para Ejecutar el Análisis</h3>
+            
+            <p>Para verificar las implementaciones analizadas:</p>
+            
+            <div class="command-block">
+# Compilar y ejecutar el proyecto
+.\build.bat
+.\run.bat
+
+# Explorar estructura de archivos
+tree src /F
+
+# Buscar implementaciones específicas
+findstr /S /N "class.*extends.*Enlazada" src\*.java
+findstr /S /N "Pila" src\*.java
+findstr /S /N "fechaEntrega" src\*.java
+            </div>
+        </div>
+
+        <h3>Valor Académico del Proyecto:</h3>
+
+        <p>Este proyecto representa un excelente ejemplo de aplicación práctica de estructuras de datos en un contexto real. La implementación demuestra no solo comprensión técnica de las estructuras, sino también criterio para seleccionar las apropiadas según el problema a resolver. La funcionalidad de gestión de fechas importantes cumple efectivamente con el objetivo de crear un sistema de recordatorios útil para estudiantes.</p>
+
+        <div class="flow-diagram">
+            <h4>Resumen del Flujo de Aprendizaje Evidenciado:</h4>
+            <p><code>Teoría de Estructuras de Datos</code> → <code>Implementación Práctica</code> → <code>Integración con Persistencia</code> → <code>Aplicación en UI</code> → <code>Producto Final Funcional</code></p>
+        </div>
+
+    </div>
+</body>
+</html>
