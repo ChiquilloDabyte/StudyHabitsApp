@@ -13,7 +13,7 @@ public class login extends JFrame {
     private GestorRegistro gestorRegistro;
     private int xMouse, yMouse;
     private CardLayout layout;
-
+//s
     public login() {
         gestorRegistro = new GestorRegistro();
         initComponents();
