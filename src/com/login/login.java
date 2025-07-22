@@ -183,6 +183,15 @@ public class login extends JFrame {
                 }
             }
         });
+        
+        Username.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    Pass.requestFocus();
+                }
+            }
+        });
 
         GroupLayout UsernameSpaceLayout = new GroupLayout(UsernameSpace);
         UsernameSpace.setLayout(UsernameSpaceLayout);
@@ -300,6 +309,15 @@ public class login extends JFrame {
                 if (String.valueOf(Pass.getPassword()).isEmpty()) {
                     Pass.setText("********");
                     Pass.setForeground(Color.GRAY);
+                }
+            }
+        });
+        
+        Pass.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntrarBtnt.requestFocus();
                 }
             }
         });
@@ -556,16 +574,27 @@ public class login extends JFrame {
         EntryMail.setText("Correo @unal.edu.co");
         EntryMail.setBorder(null);
         EntryMail.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (EntryMail.getText().equals("Correo @unal.edu.co")) {
                     EntryMail.setText("");
                     EntryMail.setForeground(Color.BLACK);
                 }
             }
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (EntryMail.getText().isEmpty()) {
                     EntryMail.setText("Correo @unal.edu.co");
                     EntryMail.setForeground(Color.GRAY);
+                }
+            }
+        });
+        
+        EntryMail.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntryPass.requestFocus();
                 }
             }
         });
@@ -585,16 +614,27 @@ public class login extends JFrame {
         EntryUser.setText("Nombre de usuario");
         EntryUser.setBorder(null);
         EntryUser.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (EntryUser.getText().equals("Nombre de usuario")) {
                     EntryUser.setText("");
                     EntryUser.setForeground(Color.BLACK);
                 }
             }
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (EntryUser.getText().isEmpty()) {
                     EntryUser.setText("Nombre de usuario");
                     EntryUser.setForeground(Color.GRAY);
+                }
+            }
+        });
+        
+        EntryUser.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntryMail.requestFocus();
                 }
             }
         });
@@ -604,16 +644,27 @@ public class login extends JFrame {
         EntryPass.setText("************");
         EntryPass.setBorder(null);
         EntryPass.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (String.valueOf(EntryPass.getPassword()).equals("************")) {
                     EntryPass.setText("");
                     EntryPass.setForeground(Color.BLACK);
                 }
             }
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (String.valueOf(EntryPass.getPassword()).isEmpty()) {
                     EntryPass.setText("************");
                     EntryPass.setForeground(Color.GRAY);
+                }
+            }
+        });
+        
+        EntryPass.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    SendRest.requestFocus();
                 }
             }
         });
