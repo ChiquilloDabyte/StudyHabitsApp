@@ -24,6 +24,81 @@ public class login extends JFrame {
         SingUpFrame.setName("singup");
         SingInFrame.setName("singin");
         layout.show(FlipFrame, "singin");
+        
+        // Configurar orden de tabulación para inicio de sesión
+        Username.setNextFocusableComponent(Pass);
+        Pass.setNextFocusableComponent(EntrarBtnt);
+        
+        // Configurar orden de tabulación para registro
+        EntryUser.setNextFocusableComponent(EntryMail);
+        EntryMail.setNextFocusableComponent(EntryPass);
+        EntryPass.setNextFocusableComponent(SendRest);
+        
+        // Agregar key listeners para la tecla Enter
+        Username.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    Pass.requestFocusInWindow();
+                }
+            }
+        });
+        
+        Pass.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntrarBtnt.requestFocusInWindow();
+                }
+            }
+        });
+        
+        EntrarBtnt.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntrarBtnt.dispatchEvent(new MouseEvent(EntrarBtnt, MouseEvent.MOUSE_CLICKED, 
+                        System.currentTimeMillis(), 0, 0, 0, 1, false));
+                }
+            }
+        });
+        
+        EntryUser.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntryMail.requestFocusInWindow();
+                }
+            }
+        });
+        
+        EntryMail.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    EntryPass.requestFocusInWindow();
+                }
+            }
+        });
+        
+        EntryPass.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    SendRest.requestFocusInWindow();
+                }
+            }
+        });
+        
+        SendRest.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    SendRest.dispatchEvent(new MouseEvent(SendRest, MouseEvent.MOUSE_CLICKED, 
+                        System.currentTimeMillis(), 0, 0, 0, 1, false));
+                }
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -94,15 +169,17 @@ public class login extends JFrame {
         Username.setHorizontalAlignment(JTextField.CENTER);
         Username.setText("Ingrese su usuario");
         Username.setBorder(null);
-        Username.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
+        Username.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
                 if (Username.getText().equals("Ingrese su usuario")) {
                     Username.setText("");
                     Username.setForeground(new Color(0, 102, 102));
                 }
-                if (String.valueOf(Pass.getPassword()).isEmpty()) {
-                    Pass.setText("********");
-                    Pass.setForeground(Color.GRAY);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (Username.getText().isEmpty()) {
+                    Username.setText("Ingrese su usuario");
+                    Username.setForeground(Color.GRAY);
                 }
             }
         });
@@ -134,6 +211,17 @@ public class login extends JFrame {
         EntrarBtnt.setHorizontalAlignment(SwingConstants.CENTER);
         EntrarBtnt.setText("ENTRAR");
         EntrarBtnt.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        EntrarBtnt.setFocusable(true);
+        EntrarBtnt.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                EntrarBtn.setBackground(new Color(0, 102, 102));
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                EntrarBtn.setBackground(new Color(0, 153, 153));
+            }
+        });
         EntrarBtnt.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 String correo = Username.getText().trim();
@@ -201,15 +289,17 @@ public class login extends JFrame {
         Pass.setHorizontalAlignment(JTextField.CENTER);
         Pass.setText("********");
         Pass.setBorder(null);
-        Pass.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
-                if (Username.getText().isEmpty()) {
-                    Username.setText("Ingrese su usuario");
-                    Username.setForeground(Color.GRAY);
-                }
+        Pass.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
                 if (String.valueOf(Pass.getPassword()).equals("********")) {
                     Pass.setText("");
                     Pass.setForeground(new Color(0, 102, 102));
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (String.valueOf(Pass.getPassword()).isEmpty()) {
+                    Pass.setText("********");
+                    Pass.setForeground(Color.GRAY);
                 }
             }
         });
@@ -326,6 +416,17 @@ public class login extends JFrame {
         SendRest.setHorizontalAlignment(SwingConstants.CENTER);
         SendRest.setText("Enviar");
         SendRest.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        SendRest.setFocusable(true);
+        SendRest.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                SendRes.setBackground(new Color(0, 102, 102));
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                SendRes.setBackground(new Color(0, 153, 153));
+            }
+        });
         SendRest.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 String nombre = EntryUser.getText().trim();
@@ -454,19 +555,17 @@ public class login extends JFrame {
         EntryMail.setForeground(new Color(153, 153, 153));
         EntryMail.setText("Correo @unal.edu.co");
         EntryMail.setBorder(null);
-        EntryMail.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
-                if (EntryUser.getText().isEmpty()) {
-                    EntryUser.setText("Nombre de usuario");
-                    EntryUser.setForeground(Color.GRAY);
-                }
+        EntryMail.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
                 if (EntryMail.getText().equals("Correo @unal.edu.co")) {
                     EntryMail.setText("");
                     EntryMail.setForeground(Color.BLACK);
                 }
-                if (String.valueOf(EntryPass.getPassword()).isEmpty()) {
-                    EntryPass.setText("************");
-                    EntryPass.setForeground(Color.GRAY);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (EntryMail.getText().isEmpty()) {
+                    EntryMail.setText("Correo @unal.edu.co");
+                    EntryMail.setForeground(Color.GRAY);
                 }
             }
         });
@@ -485,19 +584,17 @@ public class login extends JFrame {
         EntryUser.setForeground(new Color(153, 153, 153));
         EntryUser.setText("Nombre de usuario");
         EntryUser.setBorder(null);
-        EntryUser.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
+        EntryUser.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
                 if (EntryUser.getText().equals("Nombre de usuario")) {
                     EntryUser.setText("");
                     EntryUser.setForeground(Color.BLACK);
                 }
-                if (EntryMail.getText().isEmpty()) {
-                    EntryMail.setText("Correo @unal.edu.co");
-                    EntryMail.setForeground(Color.GRAY);
-                }
-                if (String.valueOf(EntryPass.getPassword()).isEmpty()) {
-                    EntryPass.setText("************");
-                    EntryPass.setForeground(Color.GRAY);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (EntryUser.getText().isEmpty()) {
+                    EntryUser.setText("Nombre de usuario");
+                    EntryUser.setForeground(Color.GRAY);
                 }
             }
         });
@@ -506,19 +603,17 @@ public class login extends JFrame {
         EntryPass.setForeground(new Color(153, 153, 153));
         EntryPass.setText("************");
         EntryPass.setBorder(null);
-        EntryPass.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
-                if (EntryUser.getText().isEmpty()) {
-                    EntryUser.setText("Nombre de usuario");
-                    EntryUser.setForeground(Color.GRAY);
-                }
-                if (EntryMail.getText().isEmpty()) {
-                    EntryMail.setText("Correo @unal.edu.co");
-                    EntryMail.setForeground(Color.GRAY);
-                }
+        EntryPass.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
                 if (String.valueOf(EntryPass.getPassword()).equals("************")) {
                     EntryPass.setText("");
                     EntryPass.setForeground(Color.BLACK);
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (String.valueOf(EntryPass.getPassword()).isEmpty()) {
+                    EntryPass.setText("************");
+                    EntryPass.setForeground(Color.GRAY);
                 }
             }
         });
