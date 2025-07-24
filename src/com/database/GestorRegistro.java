@@ -95,6 +95,7 @@ public class GestorRegistro {
             pstmt.setString(2, correo);
             pstmt.setString(3, contrasena);
             pstmt.executeUpdate();
+            pstmt.clearParameters();
             
             long endTime = System.nanoTime();
             System.out.printf("User registration took: %.2f ms%n", (endTime - startTime) / 1_000_000.0);
@@ -136,8 +137,9 @@ public class GestorRegistro {
             }
             PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.CHECK_EMAIL_EXISTS);
             pstmt.setString(1, correo);
-            ResultSet rs = pstmt.executeQuery();
-            return rs.next();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             System.err.println("Error al verificar correo: " + e.getMessage());
             return true;
@@ -151,9 +153,10 @@ public class GestorRegistro {
             String query = "SELECT COUNT(*) FROM Usuarios WHERE correo = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, correo);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1) > 0;
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -257,20 +260,26 @@ public class GestorRegistro {
         List<Tarea> tareas = new ArrayList<>();
         
         try {
+            if (statementCache == null) {
+                System.err.println("Statement cache not initialized, using fallback for task search");
+                return buscarTareasPorUsuarioFallback(idUsuario);
+            }
+            
             PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.SELECT_TASKS_BY_USER);
             pstmt.setInt(1, idUsuario);
             
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                Tarea tarea = new Tarea(
-                    rs.getInt("idTarea"), 
-                    idUsuario, 
-                    rs.getString("nombre"), 
-                    rs.getString("descripcion")
-                );
-                tarea.setCompletada(rs.getBoolean("completada"));
-                tarea.setFechaEntrega(rs.getString("fechaEntrega"));
-                tareas.add(tarea);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Tarea tarea = new Tarea(
+                        rs.getInt("idTarea"), 
+                        idUsuario, 
+                        rs.getString("nombre"), 
+                        rs.getString("descripcion")
+                    );
+                    tarea.setCompletada(rs.getBoolean("completada"));
+                    tarea.setFechaEntrega(rs.getString("fechaEntrega"));
+                    tareas.add(tarea);
+                }
             }
             
             long endTime = System.nanoTime();
@@ -280,6 +289,38 @@ public class GestorRegistro {
                 
         } catch (SQLException e) {
             System.err.println("Error al buscar tareas: " + e.getMessage());
+        }
+        return tareas;
+    }
+
+    private List<Tarea> buscarTareasPorUsuarioFallback(int idUsuario) {
+        List<Tarea> tareas = new ArrayList<>();
+        Connection conn = null;
+        try {
+            conn = connectionPool.getConnection();
+            String query = "SELECT idTarea, nombre, descripcion, completada, fechaEntrega FROM Tareas WHERE idUsuario = ? ORDER BY fechaEntrega";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, idUsuario);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        Tarea tarea = new Tarea(
+                            rs.getInt("idTarea"), 
+                            idUsuario, 
+                            rs.getString("nombre"), 
+                            rs.getString("descripcion")
+                        );
+                        tarea.setCompletada(rs.getBoolean("completada"));
+                        tarea.setFechaEntrega(rs.getString("fechaEntrega"));
+                        tareas.add(tarea);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in fallback task search: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
         return tareas;
     }
@@ -300,13 +341,14 @@ public class GestorRegistro {
                 pstmt.setBoolean(4, false);
                 pstmt.setString(5, fechaEntrega);
                 pstmt.executeUpdate();
-                ResultSet rs = pstmt.getGeneratedKeys();
-                if (rs.next()) {
-                    int idTarea = rs.getInt(1);
-                    if (registrarAccion) {
-                        pilaAcciones.agregarAccion(() -> eliminarTarea(idTarea, false));
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idTarea = rs.getInt(1);
+                        if (registrarAccion) {
+                            pilaAcciones.agregarAccion(() -> eliminarTarea(idTarea, false));
+                        }
+                        return idTarea;
                     }
-                    return idTarea;
                 }
             }
         } catch (SQLException e) {
@@ -330,22 +372,23 @@ public class GestorRegistro {
             String query = "SELECT idUsuario, nombre, descripcion, fechaEntrega FROM Tareas WHERE idTarea = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idTarea);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    int idUsuario = rs.getInt("idUsuario");
-                    String nombre = rs.getString("nombre");
-                    String descripcion = rs.getString("descripcion");
-                    String fechaEntrega = rs.getString("fechaEntrega");
-                    if (registrarAccion) {
-                        pilaAcciones.agregarAccion(() -> {
-                            agregarTarea(idUsuario, nombre, descripcion, fechaEntrega, false);
-                        });
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        int idUsuario = rs.getInt("idUsuario");
+                        String nombre = rs.getString("nombre");
+                        String descripcion = rs.getString("descripcion");
+                        String fechaEntrega = rs.getString("fechaEntrega");
+                        if (registrarAccion) {
+                            pilaAcciones.agregarAccion(() -> {
+                                agregarTarea(idUsuario, nombre, descripcion, fechaEntrega, false);
+                            });
+                        }
                     }
                 }
             }
             
-            query = "DELETE FROM Tareas WHERE idTarea = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            String deleteQuery = "DELETE FROM Tareas WHERE idTarea = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
                 pstmt.setInt(1, idTarea);
                 pstmt.executeUpdate();
             }
@@ -366,14 +409,15 @@ public class GestorRegistro {
             String query = "SELECT idUsuario, nombre, descripcion, completada, fechaEntrega FROM Tareas WHERE idTarea = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idTarea);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    int idUsuario = rs.getInt("idUsuario");
-                    String nombre = rs.getString("nombre");
-                    String descripcion = rs.getString("descripcion");
-                    tarea = new Tarea(idTarea, idUsuario, nombre, descripcion);
-                    tarea.setCompletada(rs.getBoolean("completada"));
-                    tarea.setFechaEntrega(rs.getString("fechaEntrega"));
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        int idUsuario = rs.getInt("idUsuario");
+                        String nombre = rs.getString("nombre");
+                        String descripcion = rs.getString("descripcion");
+                        tarea = new Tarea(idTarea, idUsuario, nombre, descripcion);
+                        tarea.setCompletada(rs.getBoolean("completada"));
+                        tarea.setFechaEntrega(rs.getString("fechaEntrega"));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -384,6 +428,25 @@ public class GestorRegistro {
             }
         }
         return tarea;
+    }
+
+    public void actualizarEstadoTarea(int idTarea, boolean completada) {
+        Connection conn = null;
+        try {
+            conn = connectionPool.getConnection();
+            String query = "UPDATE Tareas SET completada = ? WHERE idTarea = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setBoolean(1, completada);
+                pstmt.setInt(2, idTarea);
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar estado de tarea: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
+        }
     }
 
     public void actualizarFechaEntrega(int idTarea, String fechaEntrega) {
@@ -423,9 +486,10 @@ public class GestorRegistro {
             PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.VALIDATE_CREDENTIALS);
             pstmt.setString(1, correo);
             pstmt.setString(2, contrasena);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("idUsuario");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("idUsuario");
+                }
             }
         } catch (SQLException e) {
             System.err.println("Error al validar credenciales: " + e.getMessage());
@@ -441,9 +505,10 @@ public class GestorRegistro {
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, correo);
                 pstmt.setString(2, contrasena);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt("idUsuario");
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("idUsuario");
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -463,9 +528,10 @@ public class GestorRegistro {
             String query = "SELECT nombre FROM Usuarios WHERE idUsuario = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idUsuario);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getString("nombre");
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("nombre");
+                    }
                 }
             }
         } catch (SQLException e) {
