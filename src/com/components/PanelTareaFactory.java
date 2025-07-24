@@ -5,6 +5,7 @@ import com.implementation.NodoTareas;
 import com.implementation.Tarea;
 import com.database.GestorRegistro;
 import com.windowP.PrincipalWindow;
+import com.utils.DateValidator;
 import javax.swing.*;
 import java.awt.*;
 import com.toedter.calendar.JCalendar;
@@ -36,17 +37,41 @@ public class PanelTareaFactory {
                 spinnerPanel.add(timeSpinner);
                 
                 JCalendar calendar = new JCalendar();
+                // Set minimum date to today to prevent past date selection
+                calendar.setMinSelectableDate(DateValidator.getMinimumDate());
+                
                 JPanel panel = new JPanel(new BorderLayout());
                 panel.add(calendar, BorderLayout.CENTER);
                 panel.add(spinnerPanel, BorderLayout.SOUTH);
                 
-                int result = JOptionPane.showConfirmDialog(
-                    null, panel, "Seleccionar fecha y hora", 
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                // Add validation instructions
+                JLabel instructionLabel = new JLabel(
+                    "<html><i>📅 Solo se pueden seleccionar fechas futuras</i></html>");
+                instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                instructionLabel.setForeground(new Color(0, 102, 102));
+                panel.add(instructionLabel, BorderLayout.NORTH);
                 
-                if (result == JOptionPane.OK_OPTION) {
+                boolean validDateSelected = false;
+                while (!validDateSelected) {
+                    int result = JOptionPane.showConfirmDialog(
+                        null, panel, "Seleccionar fecha y hora", 
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    
+                    if (result != JOptionPane.OK_OPTION) {
+                        break; // User cancelled
+                    }
+                    
                     java.util.Date selectedDate = calendar.getDate();
                     java.util.Date selectedTime = (java.util.Date)timeSpinner.getValue();
+                    
+                    // Validate that the selected date and time is not in the past
+                    if (!DateValidator.isFutureDateTime(selectedDate, selectedTime)) {
+                        DateValidator.showPastDateTimeError(panel);
+                        continue; // Show dialog again
+                    }
+                    
+                    // Valid date selected, proceed
+                    validDateSelected = true;
                     
                     // Combinar fecha y hora
                     java.util.Calendar cal = java.util.Calendar.getInstance();

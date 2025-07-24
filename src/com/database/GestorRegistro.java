@@ -12,8 +12,9 @@ import javax.activation.DataHandler;
 
 public class GestorRegistro {
     private PilaAcciones pilaAcciones;
-    private static final String DB_URL = "jdbc:sqlite:taskgestor.db";
-    private Connection conn;
+    private DatabaseConnectionPool connectionPool;
+    private PreparedStatementCache statementCache;
+    private Connection cachedConnection;
     private String codigoConfirmacion;
     private Random random;
     
@@ -25,12 +26,17 @@ public class GestorRegistro {
     public GestorRegistro() {
         this.pilaAcciones = new PilaAcciones();
         this.random = new Random();
+        this.connectionPool = DatabaseConnectionPool.getInstance();
         inicializarBaseDatos();
     }
 
     private void inicializarBaseDatos() {
+        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(DB_URL);
+            conn = connectionPool.getConnection();
+            this.cachedConnection = conn;
+            this.statementCache = new PreparedStatementCache(conn);
+            
             String script = "";
             try (java.util.Scanner scanner = new java.util.Scanner(getClass().getResourceAsStream("/com/database/schema.sql"))) {
                 scanner.useDelimiter("\\A"); // Lee todo el archivo
@@ -46,41 +52,119 @@ public class GestorRegistro {
                     conn.createStatement().execute(trimmed);
                 }
             }
+            
+            System.out.println("Database initialized with connection pool. Available connections: " 
+                + connectionPool.getAvailableConnections());
         } catch (Exception e) {
             System.err.println("Error al inicializar la base de datos: " + e.getMessage());
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
+            // Try fallback initialization
+            try {
+                Thread.sleep(1000); // Wait a bit
+                conn = connectionPool.getConnection();
+                this.statementCache = new PreparedStatementCache(conn);
+                System.out.println("Fallback database initialization successful");
+            } catch (Exception fallbackException) {
+                System.err.println("Fallback initialization also failed: " + fallbackException.getMessage());
+                // Create minimal fallback to prevent null pointer exceptions
+                this.statementCache = null;
+            } finally {
+                if (conn != null) {
+                    connectionPool.releaseConnection(conn);
+                }
+            }
         }
     }
 
     public boolean registrarUsuario(String nombre, String apellido, String correo, String contrasena) {
+        long startTime = System.nanoTime();
         try {
             if (existeCorreo(correo)) {
                 return false;
             }
 
-            String query = "INSERT INTO Usuarios (nombre, correo, contrasena) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setString(1, nombre);
-                pstmt.setString(2, correo);
-                pstmt.setString(3, contrasena);
-                pstmt.executeUpdate();
-                return true;
+            if (statementCache == null) {
+                System.err.println("Statement cache not initialized, using direct connection fallback");
+                return registrarUsuarioFallback(nombre, apellido, correo, contrasena);
             }
+
+            PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.INSERT_USER);
+            pstmt.setString(1, nombre);
+            pstmt.setString(2, correo);
+            pstmt.setString(3, contrasena);
+            pstmt.executeUpdate();
+            
+            long endTime = System.nanoTime();
+            System.out.printf("User registration took: %.2f ms%n", (endTime - startTime) / 1_000_000.0);
+            return true;
         } catch (SQLException e) {
             System.err.println("Error al registrar usuario: " + e.getMessage());
             return false;
         }
     }
 
+    private boolean registrarUsuarioFallback(String nombre, String apellido, String correo, String contrasena) {
+        Connection conn = null;
+        try {
+            conn = connectionPool.getConnection();
+            String query = "INSERT INTO Usuarios (nombre, correo, contrasena) VALUES (?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, nombre);
+                pstmt.setString(2, correo);
+                pstmt.setString(3, contrasena);
+                pstmt.executeUpdate();
+                System.out.println("User registered successfully using fallback method");
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in fallback user registration: " + e.getMessage());
+            return false;
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
+        }
+    }
+
     public boolean existeCorreo(String correo) {
-        String query = "SELECT COUNT(*) FROM Usuarios WHERE correo = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try {
+            if (statementCache == null) {
+                System.err.println("Statement cache not initialized, using fallback for email check");
+                return existeCorreoFallback(correo);
+            }
+            PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.CHECK_EMAIL_EXISTS);
             pstmt.setString(1, correo);
             ResultSet rs = pstmt.executeQuery();
-            return rs.getInt(1) > 0;
+            return rs.next();
         } catch (SQLException e) {
             System.err.println("Error al verificar correo: " + e.getMessage());
             return true;
         }
+    }
+
+    private boolean existeCorreoFallback(String correo) {
+        Connection conn = null;
+        try {
+            conn = connectionPool.getConnection();
+            String query = "SELECT COUNT(*) FROM Usuarios WHERE correo = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, correo);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in fallback email check: " + e.getMessage());
+            return true; // Assume email exists to prevent duplicate registrations
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
+        }
+        return false;
     }
 
     public boolean enviarCodigoVerificacion(String correo) {
@@ -169,19 +253,31 @@ public class GestorRegistro {
     }
 
     public List<Tarea> buscarTareasPorUsuario(int idUsuario) {
+        long startTime = System.nanoTime();
         List<Tarea> tareas = new ArrayList<>();
+        
         try {
-            String query = "SELECT idTarea, nombre, descripcion, completada, fechaEntrega FROM Tareas WHERE idUsuario = ? ORDER BY fechaEntrega";
-            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                pstmt.setInt(1, idUsuario);
-                ResultSet rs = pstmt.executeQuery();
-                while (rs.next()) {
-                    Tarea tarea = new Tarea(rs.getInt("idTarea"), idUsuario, rs.getString("nombre"), rs.getString("descripcion"));
-                    tarea.setCompletada(rs.getBoolean("completada"));
-                    tarea.setFechaEntrega(rs.getString("fechaEntrega"));
-                    tareas.add(tarea);
-                }
+            PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.SELECT_TASKS_BY_USER);
+            pstmt.setInt(1, idUsuario);
+            
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Tarea tarea = new Tarea(
+                    rs.getInt("idTarea"), 
+                    idUsuario, 
+                    rs.getString("nombre"), 
+                    rs.getString("descripcion")
+                );
+                tarea.setCompletada(rs.getBoolean("completada"));
+                tarea.setFechaEntrega(rs.getString("fechaEntrega"));
+                tareas.add(tarea);
             }
+            
+            long endTime = System.nanoTime();
+            double timeMs = (endTime - startTime) / 1_000_000.0;
+            System.out.printf("Loaded %d tasks in %.2f ms (%.2f ms per 100 tasks)%n", 
+                tareas.size(), timeMs, (timeMs / Math.max(1, tareas.size())) * 100);
+                
         } catch (SQLException e) {
             System.err.println("Error al buscar tareas: " + e.getMessage());
         }
@@ -193,7 +289,9 @@ public class GestorRegistro {
     }
 
     private int agregarTarea(int idUsuario, String titulo, String descripcion, String fechaEntrega, boolean registrarAccion) {
+        Connection conn = null;
         try {
+            conn = connectionPool.getConnection();
             String query = "INSERT INTO Tareas (idUsuario, nombre, descripcion, completada, fechaEntrega) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setInt(1, idUsuario);
@@ -213,6 +311,10 @@ public class GestorRegistro {
             }
         } catch (SQLException e) {
             System.err.println("Error al agregar tarea: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
         return -1;
     }
@@ -222,7 +324,9 @@ public class GestorRegistro {
     }
 
     private void eliminarTarea(int idTarea, boolean registrarAccion) {
+        Connection conn = null;
         try {
+            conn = connectionPool.getConnection();
             String query = "SELECT idUsuario, nombre, descripcion, fechaEntrega FROM Tareas WHERE idTarea = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idTarea);
@@ -247,12 +351,18 @@ public class GestorRegistro {
             }
         } catch (SQLException e) {
             System.err.println("Error al eliminar tarea: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
     }
 
     public Tarea obtenerTareaPorId(int idTarea) {
         Tarea tarea = null;
+        Connection conn = null;
         try {
+            conn = connectionPool.getConnection();
             String query = "SELECT idUsuario, nombre, descripcion, completada, fechaEntrega FROM Tareas WHERE idTarea = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idTarea);
@@ -268,12 +378,18 @@ public class GestorRegistro {
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener tarea por ID: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
         return tarea;
     }
 
     public void actualizarFechaEntrega(int idTarea, String fechaEntrega) {
+        Connection conn = null;
         try {
+            conn = connectionPool.getConnection();
             String query = "UPDATE Tareas SET fechaEntrega = ? WHERE idTarea = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, fechaEntrega);
@@ -282,6 +398,10 @@ public class GestorRegistro {
             }
         } catch (SQLException e) {
             System.err.println("Error al actualizar fecha de entrega: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
     }
 
@@ -296,6 +416,27 @@ public class GestorRegistro {
 
     public int validarCredenciales(String correo, String contrasena) {
         try {
+            if (statementCache == null) {
+                System.err.println("Statement cache not initialized, using fallback for credential validation");
+                return validarCredencialesFallback(correo, contrasena);
+            }
+            PreparedStatement pstmt = statementCache.getStatement(PreparedStatementCache.VALIDATE_CREDENTIALS);
+            pstmt.setString(1, correo);
+            pstmt.setString(2, contrasena);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("idUsuario");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al validar credenciales: " + e.getMessage());
+        }
+        return -1;
+    }
+
+    private int validarCredencialesFallback(String correo, String contrasena) {
+        Connection conn = null;
+        try {
+            conn = connectionPool.getConnection();
             String query = "SELECT idUsuario FROM Usuarios WHERE correo = ? AND contrasena = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setString(1, correo);
@@ -306,13 +447,19 @@ public class GestorRegistro {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error al validar credenciales: " + e.getMessage());
+            System.err.println("Error in fallback credential validation: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
         return -1;
     }
 
     public String obtenerNombreUsuario(int idUsuario) {
+        Connection conn = null;
         try {
+            conn = connectionPool.getConnection();
             String query = "SELECT nombre FROM Usuarios WHERE idUsuario = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, idUsuario);
@@ -323,17 +470,33 @@ public class GestorRegistro {
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener nombre de usuario: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                connectionPool.releaseConnection(conn);
+            }
         }
         return "Usuario";
     }
 
     public void cerrarConexion() {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                System.err.println("Error al cerrar la conexión: " + e.getMessage());
-            }
+        if (statementCache != null) {
+            statementCache.closeAll();
         }
+        if (cachedConnection != null) {
+            connectionPool.releaseConnection(cachedConnection);
+        }
+    }
+    
+    // Method to get connection pool statistics for monitoring
+    public String getConnectionPoolStats() {
+        return String.format("Connection Pool - Available: %d, Total: %d, Cache Size: %d", 
+            connectionPool.getAvailableConnections(),
+            connectionPool.getTotalConnections(),
+            statementCache != null ? statementCache.getCacheSize() : 0);
+    }
+    
+    // Shutdown hook for proper cleanup
+    public static void shutdown() {
+        DatabaseConnectionPool.getInstance().shutdown();
     }
 }

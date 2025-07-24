@@ -17,4 +17,8 @@ CREATE TABLE IF NOT EXISTS Tareas (
     FOREIGN KEY (idUsuario) REFERENCES Usuarios(idUsuario)
 );
 
-
+-- Indexes for performance optimization
+CREATE INDEX IF NOT EXISTS idx_tareas_usuario ON Tareas(idUsuario);
+CREATE INDEX IF NOT EXISTS idx_tareas_fecha ON Tareas(fechaEntrega);
+CREATE INDEX IF NOT EXISTS idx_tareas_usuario_fecha ON Tareas(idUsuario, fechaEntrega);
+CREATE INDEX IF NOT EXISTS idx_usuarios_correo ON Usuarios(correo);

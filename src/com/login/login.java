@@ -105,8 +105,9 @@ public class login extends JFrame {
     private void initComponents() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
-        setUndecorated(true);
-        setResizable(false);
+        setUndecorated(false); // Enable window decorations for resizing
+        setResizable(true); // Make window resizable
+        setMinimumSize(new Dimension(800, 600)); // Set minimum size
 
         jPanel2 = new JPanel();
         FlipFrame = new JPanel();
@@ -826,6 +827,10 @@ public class login extends JFrame {
 
         pack();
         setLocationRelativeTo(null);
+        
+        // Set preferred size for resizability
+        setSize(900, 700);
+        setPreferredSize(new Dimension(900, 700));
     }
 
     public static void main(String args[]) {

@@ -1,7 +1,6 @@
 package com.windowP;
 
 import com.components.PanelRedondeado;
-import com.components.SimpleSlideAnimation;
 import com.components.PanelTarea;
 import com.components.PanelTareaFactory;
 import com.database.GestorRegistro;
@@ -14,6 +13,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 
 public class PrincipalWindow extends JFrame {
@@ -25,9 +26,9 @@ public class PrincipalWindow extends JFrame {
     private PanelRedondeado panelRedondeado2;
     private PanelRedondeado buscarBtn;
     private JTextField buscarTareaField;
-    private JPanel Draggle;
-    private JPanel ExitBtn;
-    private JLabel ExitBtnt;
+    private JPanel headerPanel;
+    private JPanel buttonPanel;
+    private JScrollPane scrollPane;
     private JLabel CrearTareaBtnt;
     private JLabel DeshacerBtnt;
     private JLabel BuscarLabel;
@@ -40,37 +41,99 @@ public class PrincipalWindow extends JFrame {
         initComponents();
         cargarTareas();
         setLocationRelativeTo(null);
+        
+        // Add shutdown hook for proper database cleanup
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            gestorRegistro.cerrarConexion();
+            GestorRegistro.shutdown();
+        }));
+        
+        // Add component listener for responsive behavior
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                adjustLayoutForSize();
+            }
+        });
     }
 
     private void initComponents() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setUndecorated(true);
-        setResizable(false);
+        setTitle("StudyHabits - Task Manager");
+        setResizable(true); // Make window resizable
+        setMinimumSize(new Dimension(800, 600)); // Set minimum size
+        setPreferredSize(new Dimension(1000, 700)); // Set preferred size
 
-        JPanel jPanel1 = new JPanel();
-        jPanel1.setBackground(new Color(255, 255, 255));
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        // Create main container with BorderLayout for responsiveness
+        JPanel mainContainer = new JPanel(new BorderLayout());
+        mainContainer.setBackground(new Color(255, 255, 255));
 
-        ParentPanel = new JPanel();
-        ParentPanel.setBackground(new Color(255, 255, 255));
-        //ParentPanel.setLayout(new BoxLayout(ParentPanel, BoxLayout.Y_AXIS));
-        //ParentPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10)); 
-        ParentPanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 10));
-        JScrollPane scrollPane = new JScrollPane(ParentPanel);
-        scrollPane.setBorder(null);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        jPanel1.add(scrollPane, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 100, 720, 360));
+        // Header Panel
+        createHeaderPanel();
+        mainContainer.add(headerPanel, BorderLayout.NORTH);
+
+        // Central content area with tasks
+        createContentPanel();
+        mainContainer.add(scrollPane, BorderLayout.CENTER);
+
+        // Bottom button panel
+        createButtonPanel();
+        mainContainer.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Search panel on the right
+        JPanel searchPanel = createSearchPanel();
+        mainContainer.add(searchPanel, BorderLayout.EAST);
+
+        setContentPane(mainContainer);
+        pack();
+    }
+
+    private void createHeaderPanel() {
+        headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(new Color(255, 255, 255));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         jLabel1 = new JLabel();
         jLabel1.setFont(new Font("Roboto SemiBold", Font.BOLD, 24));
         jLabel1.setForeground(new Color(0, 102, 102));
         jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel1.setText("Bienvenido, " + gestorRegistro.obtenerNombreUsuario(idUsuario));
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 20, 800, 40));
+        
+        // Add connection pool stats
+        JLabel statsLabel = new JLabel(gestorRegistro.getConnectionPoolStats());
+        statsLabel.setFont(new Font("Roboto", Font.PLAIN, 10));
+        statsLabel.setForeground(new Color(128, 128, 128));
+        
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(new Color(255, 255, 255));
+        titlePanel.add(jLabel1, BorderLayout.CENTER);
+        titlePanel.add(statsLabel, BorderLayout.SOUTH);
+        
+        headerPanel.add(titlePanel, BorderLayout.CENTER);
+    }
 
+    private void createContentPanel() {
+        ParentPanel = new JPanel();
+        ParentPanel.setBackground(new Color(255, 255, 255));
+        ParentPanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 10));
+        
+        scrollPane = new JScrollPane(ParentPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
+    }
+
+    private void createButtonPanel() {
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        buttonPanel.setBackground(new Color(255, 255, 255));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+
+        // Create Task Button
         panelRedondeado1 = new PanelRedondeado();
         panelRedondeado1.setBackground(new Color(0, 153, 153));
+        panelRedondeado1.setPreferredSize(new Dimension(160, 40));
+        
         CrearTareaBtnt = new JLabel();
         CrearTareaBtnt.setFont(new Font("Roboto Medium", Font.BOLD, 18));
         CrearTareaBtnt.setForeground(Color.WHITE);
@@ -82,7 +145,7 @@ public class PrincipalWindow extends JFrame {
             public void mouseClicked(MouseEvent evt) {
                 PanelTarea panel = PanelTareaFactory.agregarTarea(ParentPanel, listaTareas, null, gestorRegistro);
                 if (panel != null) {
-                    JOptionPane.showMessageDialog(PrincipalWindow.this, "Tarea creada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    Toast.mostrar(PrincipalWindow.this, "Tarea creada exitosamente");
                 }
             }
             @Override
@@ -95,22 +158,14 @@ public class PrincipalWindow extends JFrame {
             }
         });
 
-        GroupLayout panelRedondeado1Layout = new GroupLayout(panelRedondeado1);
-        panelRedondeado1.setLayout(panelRedondeado1Layout);
-        panelRedondeado1Layout.setHorizontalGroup(
-            panelRedondeado1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(CrearTareaBtnt, GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-        );
-        panelRedondeado1Layout.setVerticalGroup(
-            panelRedondeado1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(GroupLayout.Alignment.TRAILING, panelRedondeado1Layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(CrearTareaBtnt, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel1.add(panelRedondeado1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 470, 160, 34));
+        panelRedondeado1.setLayout(new BorderLayout());
+        panelRedondeado1.add(CrearTareaBtnt, BorderLayout.CENTER);
 
+        // Undo Button
         panelRedondeado2 = new PanelRedondeado();
         panelRedondeado2.setBackground(new Color(0, 153, 153));
+        panelRedondeado2.setPreferredSize(new Dimension(160, 40));
+        
         DeshacerBtnt = new JLabel();
         DeshacerBtnt.setFont(new Font("Roboto Medium", Font.BOLD, 18));
         DeshacerBtnt.setForeground(Color.WHITE);
@@ -136,155 +191,89 @@ public class PrincipalWindow extends JFrame {
             }
         });
 
-        GroupLayout panelRedondeado2Layout = new GroupLayout(panelRedondeado2);
-        panelRedondeado2.setLayout(panelRedondeado2Layout);
-        panelRedondeado2Layout.setHorizontalGroup(
-            panelRedondeado2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(DeshacerBtnt, GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-        );
-        panelRedondeado2Layout.setVerticalGroup(
-            panelRedondeado2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(GroupLayout.Alignment.TRAILING, panelRedondeado2Layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(DeshacerBtnt, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel1.add(panelRedondeado2, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 470, 160, 34));
+        panelRedondeado2.setLayout(new BorderLayout());
+        panelRedondeado2.add(DeshacerBtnt, BorderLayout.CENTER);
 
-        buscarTareaField = new JTextField("Nombre de la tarea");
-        buscarTareaField.setFont(new Font("Roboto Medium", Font.PLAIN, 14));
-        buscarTareaField.setForeground(new Color(153, 153, 153));
-        buscarTareaField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                if (buscarTareaField.getText().equals("Nombre de la tarea")) {
-                    buscarTareaField.setText("");
-                    buscarTareaField.setForeground(Color.BLACK);
-                }
-            }
-        });
-        jPanel1.add(buscarTareaField, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 470, 200, 34));
+        buttonPanel.add(panelRedondeado1);
+        buttonPanel.add(panelRedondeado2);
+    }
+
+    private JPanel createSearchPanel() {
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.setBackground(new Color(255, 255, 255));
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 20));
+        searchPanel.setPreferredSize(new Dimension(200, 0));
+
+        BuscarLabel = new JLabel("Buscar Tareas");
+        BuscarLabel.setFont(new Font("Roboto Medium", Font.BOLD, 14));
+        BuscarLabel.setForeground(new Color(0, 102, 102));
+        
+        buscarTareaField = new JTextField();
+        buscarTareaField.setFont(new Font("Roboto", Font.PLAIN, 14));
+        buscarTareaField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(0, 153, 153), 1),
+            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
 
         buscarBtn = new PanelRedondeado();
         buscarBtn.setBackground(new Color(0, 153, 153));
-        BuscarLabel = new JLabel();
-        BuscarLabel.setFont(new Font("Roboto Medium", Font.BOLD, 18));
-        BuscarLabel.setForeground(Color.WHITE);
-        BuscarLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        BuscarLabel.setText("Buscar");
-        BuscarLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        BuscarLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                buscarBtn.setBackground(new Color(0, 102, 102));
-            }
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                buscarBtn.setBackground(new Color(0, 153, 153));
-            }
-        });
+        buscarBtn.setPreferredSize(new Dimension(0, 35));
+        
+        JLabel buscarText = new JLabel("Buscar");
+        buscarText.setFont(new Font("Roboto Medium", Font.BOLD, 14));
+        buscarText.setForeground(Color.WHITE);
+        buscarText.setHorizontalAlignment(SwingConstants.CENTER);
+        buscarText.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        buscarBtn.setLayout(new BorderLayout());
+        buscarBtn.add(buscarText, BorderLayout.CENTER);
 
-        GroupLayout buscarBtnLayout = new GroupLayout(buscarBtn);
-        buscarBtn.setLayout(buscarBtnLayout);
-        buscarBtnLayout.setHorizontalGroup(
-            buscarBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(BuscarLabel, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-        );
-        buscarBtnLayout.setVerticalGroup(
-            buscarBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(GroupLayout.Alignment.TRAILING, buscarBtnLayout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(BuscarLabel, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel1.add(buscarBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 470, 100, 34));
+        JPanel searchInputPanel = new JPanel(new BorderLayout(0, 10));
+        searchInputPanel.setBackground(new Color(255, 255, 255));
+        searchInputPanel.add(BuscarLabel, BorderLayout.NORTH);
+        searchInputPanel.add(buscarTareaField, BorderLayout.CENTER);
+        searchInputPanel.add(buscarBtn, BorderLayout.SOUTH);
 
-        Draggle = new JPanel();
-        Draggle.setBackground(new Color(255, 255, 255));
-        Draggle.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            private int xMouse, yMouse;
-            public void mouseDragged(MouseEvent evt) {
-                int x = evt.getXOnScreen();
-                int y = evt.getYOnScreen();
-                PrincipalWindow.this.setLocation(x - xMouse, y - yMouse);
-            }
-            public void mousePressed(MouseEvent evt) {
-                xMouse = evt.getX();
-                yMouse = evt.getY();
-            }
-        });
+        searchPanel.add(searchInputPanel, BorderLayout.NORTH);
+        return searchPanel;
+    }
 
-        ExitBtn = new JPanel();
-        ExitBtn.setBackground(new Color(255, 255, 255));
-        ExitBtnt = new JLabel();
-        ExitBtnt.setFont(new Font("Segoe UI", Font.PLAIN, 36));
-        ExitBtnt.setForeground(new Color(204, 204, 204));
-        ExitBtnt.setHorizontalAlignment(SwingConstants.CENTER);
-        ExitBtnt.setText("X");
-        ExitBtnt.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        ExitBtnt.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                System.exit(0);
-            }
-            public void mouseEntered(MouseEvent evt) {
-                ExitBtnt.setForeground(Color.BLACK);
-            }
-            public void mouseExited(MouseEvent evt) {
-                ExitBtnt.setForeground(Color.LIGHT_GRAY);
-            }
-        });
-
-        GroupLayout ExitBtnLayout = new GroupLayout(ExitBtn);
-        ExitBtn.setLayout(ExitBtnLayout);
-        ExitBtnLayout.setHorizontalGroup(
-            ExitBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(ExitBtnLayout.createSequentialGroup()
-                    .addComponent(ExitBtnt, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE))
-        );
-        ExitBtnLayout.setVerticalGroup(
-            ExitBtnLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(ExitBtnt, GroupLayout.PREFERRED_SIZE, 35, Short.MAX_VALUE)
-        );
-
-        GroupLayout DraggleLayout = new GroupLayout(Draggle);
-        Draggle.setLayout(DraggleLayout);
-        DraggleLayout.setHorizontalGroup(
-            DraggleLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(DraggleLayout.createSequentialGroup()
-                    .addComponent(ExitBtn, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 769, Short.MAX_VALUE))
-        );
-        DraggleLayout.setVerticalGroup(
-            DraggleLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(DraggleLayout.createSequentialGroup()
-                    .addComponent(ExitBtn, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 5, Short.MAX_VALUE))
-        );
-
-        jPanel1.add(Draggle, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 800, 40));
-
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, 800, GroupLayout.PREFERRED_SIZE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, 520, GroupLayout.PREFERRED_SIZE)
-        );
-
-        pack();
+    private void adjustLayoutForSize() {
+        Dimension size = getSize();
+        
+        // Adjust search panel visibility based on window width
+        Component searchPanel = ((BorderLayout) getContentPane().getLayout()).getLayoutComponent(BorderLayout.EAST);
+        if (searchPanel != null) {
+            searchPanel.setVisible(size.width > 1000);
+        }
+        
+        // Adjust button layout based on window width
+        if (size.width < 900) {
+            buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        } else {
+            buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        }
+        
+        revalidate();
+        repaint();
     }
 
     private void cargarTareas() {
+        long startTime = System.nanoTime();
         ParentPanel.removeAll();
+        
         List<Tarea> tareas = gestorRegistro.buscarTareasPorUsuario(idUsuario);
         for (Tarea tarea : tareas) {
             NodoTareas nodo = listaTareas.agregarTarea(tarea.getIdTarea(), idUsuario, tarea.getNombre(), tarea.getDescripcion());
             PanelTareaFactory.agregarTarea(ParentPanel, listaTareas, nodo, gestorRegistro);
         }
+        
         ParentPanel.revalidate();
         ParentPanel.repaint();
+        
+        long endTime = System.nanoTime();
+        double timeMs = (endTime - startTime) / 1_000_000.0;
+        System.out.printf("UI task loading completed in %.2f ms%n", timeMs);
     }
 
     private void agregarPanelTarea(Tarea tarea) {
