@@ -31,18 +31,19 @@ public class VistaTareaDialog extends JDialog {
         JTextArea descripcion = new JTextArea(tarea.getDescripcion());
         descripcion.setWrapStyleWord(true);
         descripcion.setLineWrap(true);
-        descripcion.setEditable(false);
+        descripcion.setEditable(true);
         descripcion.setBackground(null);
         descripcion.setBorder(BorderFactory.createTitledBorder("Descripción"));
         
         // Fecha de entrega
-        JPanel fechaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel fechaLabel = new JLabel("Fecha de entrega: ");
-        JTextField fechaField = new JTextField(15);
-        fechaField.setEditable(false);
-        if (tarea.getFechaEntrega() != null) {
-            fechaField.setText(tarea.getFechaEntrega());
-        }
+        //JPanel fechaPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        //JLabel fechaLabel = new JLabel("Fecha de entrega: ");
+        //JTextField fechaField = new JTextField(15);
+        //fechaField.setEditable(false);
+        //fi (tarea.getFechaEntrega() != null) {
+           // fechaField.setText(tarea.getFechaEntrega());
+        //}
+        
         
         JButton editFechaBtn = new JButton("Cambiar fecha");
         editFechaBtn.addActionListener(e -> {
@@ -78,19 +79,19 @@ public class VistaTareaDialog extends JDialog {
                 
                 // Formatear la fecha
                 String formattedDate = String.format("%tF %tR", cal, cal);
-                fechaField.setText(formattedDate);
+                //fechaField.setText(formattedDate);
                 tarea.setFechaEntrega(formattedDate);
                 gestorRegistro.actualizarFechaEntrega(tarea.getIdTarea(), formattedDate);
             }
         });
         
-        fechaPanel.add(fechaLabel);
-        fechaPanel.add(fechaField);
-        fechaPanel.add(editFechaBtn);
+        //fechaPanel.add(fechaLabel);
+        //fechaPanel.add(fechaField);
+        //fechaPanel.add(editFechaBtn);
         
         centerPanel.add(descripcion);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        centerPanel.add(fechaPanel);
+        //centerPanel.add(fechaPanel);
         
         add(new JScrollPane(centerPanel), BorderLayout.CENTER);
     }

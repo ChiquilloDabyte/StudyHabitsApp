@@ -41,7 +41,7 @@ public class PanelTarea extends JPanel {
         });
         add(tituloLabel, BorderLayout.NORTH);
 
-        // Panel central para descripción y fecha
+        // Panel central para descripción 
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(new Color(0, 153, 153));
@@ -59,7 +59,7 @@ public class PanelTarea extends JPanel {
         fechaLabel.setFont(new Font("Roboto Medium", Font.PLAIN, 11));
         fechaLabel.setForeground(Color.WHITE);
         if (tarea.getFechaEntrega() != null) {
-            fechaLabel.setText("Entrega: " + tarea.getFechaEntrega());
+            //fechaLabel.setText("Entrega: " + tarea.getFechaEntrega());
         }
         fechaLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
         
