@@ -160,7 +160,7 @@ public class login extends JFrame {
         Usuario.setFont(new Font("Roboto SemiBold", Font.BOLD, 24));
         Usuario.setForeground(new Color(0, 102, 102));
         Usuario.setHorizontalAlignment(SwingConstants.CENTER);
-        Usuario.setText("Usuario");
+        Usuario.setText("Correo");
 
         UsernameSpace.setBackground(new Color(195, 221, 211));
         Username.setBackground(new Color(195, 221, 211));
@@ -339,7 +339,7 @@ public class login extends JFrame {
         jLabel2.setFont(new Font("Roboto SemiCondensed Light", Font.PLAIN, 12));
         jLabel2.setForeground(new Color(0, 153, 153));
         jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
-        jLabel2.setText("Olvidaste tu contraseña?");
+       // jLabel2.setText("Olvidaste tu contraseña?");
 
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

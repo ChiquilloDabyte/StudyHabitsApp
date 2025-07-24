@@ -64,7 +64,6 @@ public class PrincipalWindow extends JFrame {
         ExitBtnt.setHorizontalAlignment(SwingConstants.CENTER);
         ExitBtnt.setCursor(new Cursor(Cursor.HAND_CURSOR));
         ExitBtnt.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        
         ExitBtnt.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -72,11 +71,11 @@ public class PrincipalWindow extends JFrame {
             }
             @Override
             public void mouseEntered(MouseEvent evt) {
-                //ExitBtnt.setBackground(new Color(0, 85, 85)); // Verde más oscuro
+                //ExitBtn.setBackground(new Color(0, 85, 85)); // Verde más oscuro
             }
             @Override
             public void mouseExited(MouseEvent evt) {
-                //ExitBtnt.setBackground(new Color(0, 102, 102)); // Verde normal
+                //ExitBtn.setBackground(new Color(0, 102, 102)); // Verde normal
             }
         });
         ExitBtn.add(ExitBtnt);
